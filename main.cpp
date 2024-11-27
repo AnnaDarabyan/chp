@@ -8,7 +8,12 @@
 #include "lab4/caesar-cipher.h"
 #include "lab5/columnar_transposition.h"
 #include "lab6/rle.h"
+#include "lab7/mixed_cipher.h"
+#include "lab8/lz77.h"
+#include "lab9/HuffmanCoding.h"
+#include "lab10/ip.h"
 
+void displayIPAddress();
 void calculateGCD();
 void calculateLCM();
 void findMissingNumberOption();
@@ -20,6 +25,115 @@ void encryptWithColumnarTransposition();
 void decryptWithColumnarTransposition();
 void runRLEEncode();
 void runRLEDecode();
+void runMixedEncode();
+void runMixedDecode();
+
+
+void displayIPAddress() {
+    std::vector<std::string> ipAddresses = getIPAddress();
+    if (ipAddresses.size() == 1 && ipAddresses[0].find("Failed") != std::string::npos) {
+        std::cout << ipAddresses[0] << std::endl;
+    } else {
+        std::cout << "Resolved IP Addresses:\n";
+        for (const std::string& ip : ipAddresses) {
+            std::cout << "- " << ip << std::endl;
+        }
+    }
+}
+
+void runHuffmanEncode() {
+    std::string input;
+    std::cout << "Enter a string to encode using Huffman Coding: ";
+    std::getline(std::cin, input);
+
+    HuffmanCoding huffman;
+    std::string encoded = huffman.encode(input);
+    std::cout << "Encoded string: " << encoded << std::endl;
+    std::cout << "Huffman Tree: " << std::endl << huffman.getHuffmanTree() << std::endl;
+}
+
+std::string trim(const std::string& str) {
+    size_t start = str.find_first_not_of(" \t\n\r");
+    if (start == std::string::npos) return "";
+    size_t end = str.find_last_not_of(" \t\n\r");
+    return str.substr(start, end - start + 1);
+}
+
+void runHuffmanDecode() {
+    std::string encodedInput;
+    std::cout << "Enter the encoded string to decode using Huffman Coding: ";
+    std::getline(std::cin, encodedInput);
+
+    std::string huffmanTree, line;
+    std::cout << "Enter the Huffman Tree (format: character code per line, end input with 'END' or an empty line):\n";
+    while (true) {
+        std::getline(std::cin, line);
+        line = trim(line);
+        if (line.empty() || line == "END") break;
+        huffmanTree += line + "\n";
+    }
+
+    HuffmanCoding huffman;
+    std::string decodedText = huffman.decode(encodedInput, huffmanTree);
+
+    if (!decodedText.empty()) {
+        std::cout << "Decoded string: " << decodedText << "\n";
+    } else {
+        std::cerr << "Failed to decode the string. Please check your Huffman Tree input.\n";
+    }
+}
+
+void runLZ77Encode() {
+    std::string input;
+    std::cout << "Enter a string to encode using LZ77: ";
+    std::getline(std::cin, input);
+
+    LZ77 lz77;
+    std::string encoded = lz77.encode(input);
+    std::cout << "Encoded string: " << encoded << std::endl;
+}
+
+void runLZ77Decode() {
+    std::string input;
+    std::cout << "Enter a string to decode using LZ77 (format: offset,length,next_char): ";
+    std::getline(std::cin, input);
+
+    LZ77 lz77;
+    std::string decoded = lz77.decode(input);
+    std::cout << "Decoded string: " << decoded << std::endl;
+}
+
+void runMixedEncode() {
+    std::string input;
+    int columns;
+
+    std::cout << "Enter a message to encode with Columnar Transposition and Run-Length Encoding: ";
+    std::getline(std::cin, input);
+
+    std::cout << "Enter the number of columns for Columnar Transposition: ";
+    std::cin >> columns;
+    std::cin.ignore();
+
+    MixedCipher mixedCipher;
+    std::string encodedMessage = mixedCipher.encode(input, columns);
+    std::cout << "Encoded Message: " << encodedMessage << std::endl;
+}
+
+void runMixedDecode() {
+    std::string input;
+    int columns;
+
+    std::cout << "Enter an encoded message to decode with Run-Length Decoding and Columnar Transposition: ";
+    std::getline(std::cin, input);
+
+    std::cout << "Enter the number of columns used for Columnar Transposition: ";
+    std::cin >> columns;
+    std::cin.ignore();
+
+    MixedCipher mixedCipher;
+    std::string decodedMessage = mixedCipher.decode(input, columns);
+    std::cout << "Decoded Message: " << decodedMessage << std::endl;
+}
 
 void calculateGCD() {
     int num1, num2;
@@ -53,6 +167,11 @@ void calculateLCM() {
 
     if (sscanf(input.c_str(), "%d %d", &num1, &num2) != 2) {
         std::cout << "Please enter valid integers.\n";
+        return;
+    }
+
+    if (num1 < 0 || num2 < 0) {
+        std::cout << "Please enter positive integers.\n";
         return;
     }
 
@@ -229,7 +348,14 @@ int main() {
         std::cout << "9. Decrypt with Columnar Transposition\n";
         std::cout << "10. Encode with Run Length Encoding\n";
         std::cout << "11. Decode with Run Length Encoding\n";
-        std::cout << "12. Exit\n";
+        std::cout << "12. Encode with Mixed Cipher (Columnar Transposition + Run-Length Encoding)\n";
+        std::cout << "13. Decode with Mixed Cipher (Run-Length Decoding + Columnar Transposition)\n";
+        std::cout << "14. Encode with LZ77\n";
+        std::cout << "15. Decode with LZ77\n";
+        std::cout << "16. Encode with Huffman Coding\n";
+        std::cout << "17. Decode with Huffman Coding\n";
+        std::cout << "18. Display Ip Address\n";
+        std::cout << "19. Exit\n";
         std::cout << "Enter your choice: ";
         std::getline(std::cin, choice);
 
@@ -244,8 +370,15 @@ int main() {
         else if (choice == "9") decryptWithColumnarTransposition();
         else if (choice == "10") runRLEEncode();
         else if (choice == "11") runRLEDecode();
-        else if (choice == "12") break;
-        else std::cout << "Invalid choice. Please enter 1 to 12.\n";
+        else if (choice == "12") runMixedEncode();
+        else if (choice == "13") runMixedDecode();
+        else if (choice == "14") runLZ77Encode();
+        else if (choice == "15") runLZ77Decode();
+        else if (choice == "16") runHuffmanEncode();
+        else if (choice == "17") runHuffmanDecode();
+        else if (choice == "18") displayIPAddress();
+        else if (choice == "19") break;
+        else std::cout << "Invalid choice. Please enter a valid number.\n";
     }
     return 0;
 }
